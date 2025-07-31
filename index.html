@@ -9,12 +9,15 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React and ReactDOM with fallback -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js" 
+            onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js'"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+            onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js'"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Lucide Icons with fallback -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
+            onerror="console.warn('Lucide icons failed to load')"></script>
     <style>
         body {
             margin: 0;
@@ -40,6 +43,23 @@
     <div id="root">
         <div id="loading">🐯 阪神ファンアプリを読み込み中...</div>
     </div>
+    
+    <!-- Error debugging -->
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            document.getElementById('loading').innerHTML = 
+                '❌ エラーが発生しました: ' + e.message + '<br><small>コンソールを確認してください</small>';
+        });
+        
+        // Check if libraries loaded after 3 seconds
+        setTimeout(function() {
+            if (typeof React === 'undefined') {
+                document.getElementById('loading').innerHTML = 
+                    '❌ Reactライブラリの読み込みに失敗しました<br><small>ネットワーク接続を確認してください</small>';
+            }
+        }, 3000);
+    </script>
     
     <!-- Load app script -->
     <script src="app.js"></script>
