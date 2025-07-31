@@ -1,29 +1,29 @@
-const { useState, useEffect } = React;
+// Wait for all libraries to load before starting the app
+(function() {
+  // Check if required libraries are loaded
+  if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof Babel === 'undefined') {
+    console.error('Required libraries not loaded');
+    return;
+  }
 
-// Fallback icon component for missing icons
-const FallbackIcon = ({ className = "w-5 h-5" }) => (
-  React.createElement('div', { 
-    className: `${className} bg-gray-300 rounded`, 
-    style: { display: 'inline-block' } 
-  })
-);
+  const { useState, useEffect } = React;
 
-// Destructure Lucide icons safely with fallbacks
-const lucideIcons = window.lucide || {};
-const Heart = lucideIcons.Heart || FallbackIcon;
-const MessageCircle = lucideIcons.MessageCircle || FallbackIcon;
-const Calendar = lucideIcons.Calendar || FallbackIcon;
-const MapPin = lucideIcons.MapPin || FallbackIcon;
-const Users = lucideIcons.Users || FallbackIcon;
-const Plus = lucideIcons.Plus || FallbackIcon;
-const Send = lucideIcons.Send || FallbackIcon;
-const Star = lucideIcons.Star || FallbackIcon;
-const Trophy = lucideIcons.Trophy || FallbackIcon;
-const Home = lucideIcons.Home || FallbackIcon;
-const User = lucideIcons.User || FallbackIcon;
-const Bell = lucideIcons.Bell || FallbackIcon;
-const X = lucideIcons.X || FallbackIcon;
-const Camera = lucideIcons.Camera || FallbackIcon;
+  // Safe icon component that handles missing lucide icons
+  const SafeIcon = ({ icon: IconComponent, className = "w-5 h-5", fallback = "?" }) => {
+    if (IconComponent && typeof IconComponent === 'function') {
+      return React.createElement(IconComponent, { className });
+    }
+    return React.createElement('span', { 
+      className: `${className} inline-flex items-center justify-center text-gray-400`,
+      style: { fontSize: '0.75rem' }
+    }, fallback);
+  };
+
+  // Get Lucide icons safely
+  const getIcon = (iconName) => {
+    const lucideIcons = window.lucide || {};
+    return lucideIcons[iconName];
+  };
 
 const App = () => {
   const [currentScreen, setCurrentScreen] = useState('home');
@@ -411,7 +411,7 @@ const App = () => {
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-bold">通知</h2>
           <button onClick={() => setShowNotifications(false)}>
-            <X className="w-5 h-5" />
+            <SafeIcon icon={getIcon('X')} className="w-5 h-5" fallback="✕" />
           </button>
         </div>
         <div className="overflow-y-auto max-h-80">
@@ -464,7 +464,7 @@ const App = () => {
               <p className="text-sm">{gameInfo.currentGame.inning}</p>
               <p className="text-xs">最終更新: {gameInfo.currentGame.lastUpdate}</p>
             </div>
-            <Trophy className="w-8 h-8" />
+            <SafeIcon icon={getIcon('Trophy')} className="w-8 h-8" fallback="🏆" />
           </div>
         </div>
       ) : (
@@ -475,7 +475,7 @@ const App = () => {
               <p>{gameInfo.nextGame.date} {gameInfo.nextGame.time} vs {gameInfo.nextGame.opponent}</p>
               <p className="text-sm">{gameInfo.nextGame.venue}</p>
             </div>
-            <Trophy className="w-8 h-8" />
+            <SafeIcon icon={getIcon('Trophy')} className="w-8 h-8" fallback="🏆" />
           </div>
         </div>
       )}
@@ -530,11 +530,11 @@ const App = () => {
                 onClick={handleImageSelect}
                 className="flex items-center space-x-1 px-3 py-1 bg-gray-100 rounded text-sm"
               >
-                <Camera className="w-4 h-4" />
+                <SafeIcon icon={getIcon('Camera')} className="w-4 h-4" fallback="📷" />
                 <span>写真</span>
               </button>
               <button className="flex items-center space-x-1 px-3 py-1 bg-gray-100 rounded text-sm">
-                <MapPin className="w-4 h-4" />
+                <SafeIcon icon={getIcon('MapPin')} className="w-4 h-4" fallback="📍" />
                 <span>位置情報</span>
               </button>
             </div>
@@ -569,11 +569,11 @@ const App = () => {
             )}
             <div className="flex items-center space-x-4 text-gray-500">
               <button className="flex items-center space-x-1 hover:text-red-500">
-                <Heart className="w-4 h-4" />
+                <SafeIcon icon={getIcon('Heart')} className="w-4 h-4" fallback="♥" />
                 <span>{post.likes}</span>
               </button>
               <button className="flex items-center space-x-1 hover:text-blue-500">
-                <MessageCircle className="w-4 h-4" />
+                <SafeIcon icon={getIcon('MessageCircle')} className="w-4 h-4" fallback="💬" />
                 <span>{post.comments}</span>
               </button>
             </div>
@@ -589,7 +589,7 @@ const App = () => {
         <h2 className="text-xl font-bold">イベント</h2>
         {user && (
           <button className="bg-yellow-500 text-black p-2 rounded-full">
-            <Plus className="w-5 h-5" />
+            <SafeIcon icon={getIcon('Plus')} className="w-5 h-5" fallback="+" />
           </button>
         )}
       </div>
@@ -599,15 +599,15 @@ const App = () => {
           <h3 className="font-bold text-lg mb-2">{event.title}</h3>
           <div className="space-y-1 text-gray-600 mb-3">
             <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2" />
+              <SafeIcon icon={getIcon('Calendar')} className="w-4 h-4 mr-2" fallback="📅" />
               <span>{event.date} {event.time}</span>
             </div>
             <div className="flex items-center">
-              <MapPin className="w-4 h-4 mr-2" />
+              <SafeIcon icon={getIcon('MapPin')} className="w-4 h-4 mr-2" fallback="📍" />
               <span>{event.location}</span>
             </div>
             <div className="flex items-center">
-              <Users className="w-4 h-4 mr-2" />
+              <SafeIcon icon={getIcon('Users')} className="w-4 h-4 mr-2" fallback="👥" />
               <span>{event.participants}/{event.maxParticipants}人参加予定</span>
             </div>
             <p className="text-sm">主催: {event.organizer}</p>
@@ -670,7 +670,7 @@ const App = () => {
                   onClick={sendMessage}
                   className="bg-yellow-500 text-black p-2 rounded"
                 >
-                  <Send className="w-5 h-5" />
+                  <SafeIcon icon={getIcon('Send')} className="w-5 h-5" fallback="➤" />
                 </button>
               </div>
             </div>
@@ -723,7 +723,7 @@ const MapScreen = () => (
     
     <div className="bg-gray-200 h-48 rounded-lg flex items-center justify-center">
       <div className="text-center">
-        <MapPin className="w-12 h-12 mx-auto mb-2 text-gray-500" />
+        <SafeIcon icon={getIcon('MapPin')} className="w-12 h-12 mx-auto mb-2 text-gray-500" fallback="🗺" />
         <p className="text-gray-600">地図表示エリア</p>
         <p className="text-sm text-gray-500">あなたの現在地: 新宿区</p>
       </div>
@@ -760,13 +760,13 @@ const MapScreen = () => (
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-semibold">{bar.name}</h4>
               <div className="flex items-center">
-                <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                <SafeIcon icon={getIcon('Star')} className="w-4 h-4 text-yellow-500 mr-1" fallback="⭐" />
                 <span className="text-sm">{bar.rating}</span>
               </div>
             </div>
             <div className="text-sm text-gray-600 space-y-1">
               <div className="flex items-center">
-                <MapPin className="w-3 h-3 mr-1" />
+                <SafeIcon icon={getIcon('MapPin')} className="w-3 h-3 mr-1" fallback="📍" />
                 <span>{bar.area} • {bar.distance}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -852,7 +852,7 @@ return (
           onClick={() => setShowNotifications(true)}
           className="relative p-2"
         >
-          <Bell className="w-6 h-6" />
+          <SafeIcon icon={getIcon('Bell')} className="w-6 h-6" fallback="🔔" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full min-w-4 h-4 flex items-center justify-center">
               {unreadCount}
@@ -870,11 +870,11 @@ return (
     <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t">
       <div className="flex justify-around py-2">
         {[
-          { id: 'home', icon: Home, label: 'ホーム' },
-          { id: 'events', icon: Calendar, label: 'イベント' },
-          { id: 'chat', icon: MessageCircle, label: 'チャット' },
-          { id: 'map', icon: MapPin, label: 'マップ' },
-          { id: 'profile', icon: User, label: 'プロフィール' }
+          { id: 'home', icon: 'Home', label: 'ホーム', fallback: '🏠' },
+          { id: 'events', icon: 'Calendar', label: 'イベント', fallback: '📅' },
+          { id: 'chat', icon: 'MessageCircle', label: 'チャット', fallback: '💬' },
+          { id: 'map', icon: 'MapPin', label: 'マップ', fallback: '🗺' },
+          { id: 'profile', icon: 'User', label: 'プロフィール', fallback: '👤' }
         ].map(nav => (
           <button
             key={nav.id}
@@ -885,7 +885,7 @@ return (
                 : 'text-gray-400'
             }`}
           >
-            <nav.icon className="w-5 h-5" />
+            <SafeIcon icon={getIcon(nav.icon)} className="w-5 h-5" fallback={nav.fallback} />
             <span className="text-xs mt-1">{nav.label}</span>
           </button>
         ))}
@@ -898,22 +898,28 @@ return (
 );
 };
 
-// React 18 compatible rendering with error handling
-try {
-  const rootElement = document.getElementById('root');
-  if (!rootElement) {
-    throw new Error('Root element not found');
+  // React 18 compatible rendering with error handling
+  try {
+    const rootElement = document.getElementById('root');
+    if (!rootElement) {
+      throw new Error('Root element not found');
+    }
+    
+    // Clear loading indicator
+    rootElement.innerHTML = '';
+    
+    if (ReactDOM.createRoot) {
+      // React 18
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(React.createElement(App));
+    } else {
+      // Fallback to React 17 style
+      ReactDOM.render(React.createElement(App), rootElement);
+    }
+  } catch (error) {
+    console.error('Failed to render app:', error);
+    document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;">❌ アプリの読み込みに失敗しました。<br>ページを再読み込みしてください。</div>';
   }
-  
-  if (ReactDOM.createRoot) {
-    // React 18
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(React.createElement(App));
-  } else {
-    // Fallback to React 17 style
-    ReactDOM.render(React.createElement(App), rootElement);
-  }
-} catch (error) {
-  console.error('Failed to render app:', error);
-  document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center;">アプリの読み込みに失敗しました。ページを再読み込みしてください。</div>';
-} 
+
+  // End of wrapper function
+})(); 
