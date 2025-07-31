@@ -1,5 +1,29 @@
 const { useState, useEffect } = React;
-const { Heart, MessageCircle, Calendar, MapPin, Users, Plus, Send, Star, Trophy, Home, User, Bell, X, Camera } = lucide;
+
+// Fallback icon component for missing icons
+const FallbackIcon = ({ className = "w-5 h-5" }) => (
+  React.createElement('div', { 
+    className: `${className} bg-gray-300 rounded`, 
+    style: { display: 'inline-block' } 
+  })
+);
+
+// Destructure Lucide icons safely with fallbacks
+const lucideIcons = window.lucide || {};
+const Heart = lucideIcons.Heart || FallbackIcon;
+const MessageCircle = lucideIcons.MessageCircle || FallbackIcon;
+const Calendar = lucideIcons.Calendar || FallbackIcon;
+const MapPin = lucideIcons.MapPin || FallbackIcon;
+const Users = lucideIcons.Users || FallbackIcon;
+const Plus = lucideIcons.Plus || FallbackIcon;
+const Send = lucideIcons.Send || FallbackIcon;
+const Star = lucideIcons.Star || FallbackIcon;
+const Trophy = lucideIcons.Trophy || FallbackIcon;
+const Home = lucideIcons.Home || FallbackIcon;
+const User = lucideIcons.User || FallbackIcon;
+const Bell = lucideIcons.Bell || FallbackIcon;
+const X = lucideIcons.X || FallbackIcon;
+const Camera = lucideIcons.Camera || FallbackIcon;
 
 const App = () => {
   const [currentScreen, setCurrentScreen] = useState('home');
@@ -874,4 +898,22 @@ return (
 );
 };
 
-ReactDOM.render(<App />, document.getElementById('root')); 
+// React 18 compatible rendering with error handling
+try {
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    throw new Error('Root element not found');
+  }
+  
+  if (ReactDOM.createRoot) {
+    // React 18
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(React.createElement(App));
+  } else {
+    // Fallback to React 17 style
+    ReactDOM.render(React.createElement(App), rootElement);
+  }
+} catch (error) {
+  console.error('Failed to render app:', error);
+  document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center;">アプリの読み込みに失敗しました。ページを再読み込みしてください。</div>';
+} 
