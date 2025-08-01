@@ -9,11 +9,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React and ReactDOM with fallback -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js" 
-            onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js'"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
-            onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js'"></script>
+    <!-- React and ReactDOM with multiple fallbacks -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" 
+            onerror="loadReactFallback()"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"
+            onerror="loadReactDOMFallback()"></script>
     
     <!-- Lucide Icons with fallback -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
@@ -36,29 +36,142 @@
             height: 100vh;
             font-size: 18px;
             color: #374151;
+            flex-direction: column;
+        }
+        #debug-info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <div id="loading">🐯 阪神ファンアプリを読み込み中...</div>
+        <div id="loading">
+            🐯 阪神ファンアプリを読み込み中...
+            <div id="debug-info">
+                <div>Status: Loading libraries...</div>
+                <div>React: <span id="react-status">未確認</span></div>
+                <div>ReactDOM: <span id="reactdom-status">未確認</span></div>
+            </div>
+        </div>
     </div>
     
-    <!-- Error debugging -->
+    <!-- Error debugging and fallback loading -->
     <script>
+        let reactLoadAttempt = 0;
+        let reactDOMLoadAttempt = 0;
+        
+        function loadReactFallback() {
+            reactLoadAttempt++;
+            console.warn('React loading failed, attempting fallback', reactLoadAttempt);
+            
+            if (reactLoadAttempt === 1) {
+                // Try unpkg
+                const script = document.createElement('script');
+                script.crossOrigin = 'anonymous';
+                script.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
+                script.onerror = loadReactFallback;
+                document.head.appendChild(script);
+            } else if (reactLoadAttempt === 2) {
+                // Try development version
+                const script = document.createElement('script');
+                script.crossOrigin = 'anonymous';
+                script.src = 'https://unpkg.com/react@18/umd/react.development.js';
+                script.onerror = function() {
+                    console.error('All React loading attempts failed');
+                    showError('Reactライブラリの読み込みに失敗しました');
+                };
+                document.head.appendChild(script);
+            }
+        }
+        
+        function loadReactDOMFallback() {
+            reactDOMLoadAttempt++;
+            console.warn('ReactDOM loading failed, attempting fallback', reactDOMLoadAttempt);
+            
+            if (reactDOMLoadAttempt === 1) {
+                // Try unpkg
+                const script = document.createElement('script');
+                script.crossOrigin = 'anonymous';
+                script.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
+                script.onerror = loadReactDOMFallback;
+                document.head.appendChild(script);
+            } else if (reactDOMLoadAttempt === 2) {
+                // Try development version
+                const script = document.createElement('script');
+                script.crossOrigin = 'anonymous';
+                script.src = 'https://unpkg.com/react-dom@18/umd/react-dom.development.js';
+                script.onerror = function() {
+                    console.error('All ReactDOM loading attempts failed');
+                    showError('ReactDOMライブラリの読み込みに失敗しました');
+                };
+                document.head.appendChild(script);
+            }
+        }
+        
+        function updateDebugInfo(status, reactLoaded, reactDOMLoaded) {
+            const statusEl = document.querySelector('#debug-info div:first-child');
+            const reactStatusEl = document.getElementById('react-status');
+            const reactDOMStatusEl = document.getElementById('reactdom-status');
+            
+            if (statusEl) statusEl.textContent = 'Status: ' + status;
+            if (reactStatusEl) reactStatusEl.textContent = reactLoaded ? '✅ 読み込み完了' : '❌ 未読み込み';
+            if (reactDOMStatusEl) reactDOMStatusEl.textContent = reactDOMLoaded ? '✅ 読み込み完了' : '❌ 未読み込み';
+        }
+        
+        function showError(message) {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                loadingEl.innerHTML = '❌ ' + message + '<br><small>ページを再読み込みしてください</small>';
+            }
+        }
+        
         window.addEventListener('error', function(e) {
-            console.error('Global error:', e.error);
-            document.getElementById('loading').innerHTML = 
-                '❌ エラーが発生しました: ' + e.message + '<br><small>コンソールを確認してください</small>';
+            console.error('Global error:', e.error || e.message);
+            if (e.message && e.message.includes('Script error')) {
+                console.warn('CORS or external script error detected');
+            }
         });
         
-        // Check if libraries loaded after 3 seconds
-        setTimeout(function() {
-            if (typeof React === 'undefined') {
-                document.getElementById('loading').innerHTML = 
-                    '❌ Reactライブラリの読み込みに失敗しました<br><small>ネットワーク接続を確認してください</small>';
+        // Enhanced library check with multiple timeouts
+        let checkTimeout = 0;
+        function checkLibraries() {
+            checkTimeout++;
+            console.log('Checking libraries attempt:', checkTimeout);
+            
+            const reactLoaded = typeof React !== 'undefined';
+            const reactDOMLoaded = typeof ReactDOM !== 'undefined';
+            
+            updateDebugInfo(`チェック中... (${checkTimeout}/10)`, reactLoaded, reactDOMLoaded);
+            
+            if (reactLoaded && reactDOMLoaded) {
+                console.log('All libraries loaded successfully');
+                updateDebugInfo('ライブラリ読み込み完了、アプリ初期化中...', true, true);
+                // Libraries are loaded, app.js will handle initialization
+                return;
             }
-        }, 3000);
+            
+            if (checkTimeout < 10) {
+                // Check every 500ms for first 5 seconds
+                setTimeout(checkLibraries, 500);
+            } else if (checkTimeout === 10) {
+                // Final check after 5 seconds
+                if (!reactLoaded) {
+                    showError('Reactライブラリの読み込みがタイムアウトしました');
+                } else if (!reactDOMLoaded) {
+                    showError('ReactDOMライブラリの読み込みがタイムアウトしました');
+                }
+            }
+        }
+        
+        // Start checking after DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkLibraries);
+        } else {
+            checkLibraries();
+        }
     </script>
     
     <!-- Load app script -->

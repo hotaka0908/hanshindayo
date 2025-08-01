@@ -10,11 +10,40 @@
   }
   
   function initApp() {
-    // Check if required libraries are loaded
-    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-      console.error('Required libraries not loaded');
-      showError('必要なライブラリが読み込まれていません');
-      return;
+    console.log('initApp called');
+    
+    // Wait for libraries with retry mechanism
+    let retryCount = 0;
+    const maxRetries = 20; // 10 seconds with 500ms intervals
+    
+    function waitForLibraries() {
+      retryCount++;
+      console.log(`Waiting for libraries attempt ${retryCount}/${maxRetries}`);
+      
+      if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+        if (retryCount < maxRetries) {
+          setTimeout(waitForLibraries, 500);
+          return;
+        } else {
+          console.error('Required libraries not loaded after waiting');
+          showError('必要なライブラリが読み込まれていません。ページを再読み込みしてください。');
+          return;
+        }
+      }
+      
+      console.log('All libraries loaded, initializing app...');
+      startApp();
+    }
+    
+    waitForLibraries();
+  }
+  
+  function startApp() {
+    console.log('startApp function called');
+    
+    // Update debug info
+    if (typeof updateDebugInfo === 'function') {
+      updateDebugInfo('アプリコンポーネント初期化中...', true, true);
     }
 
     const { useState, useEffect } = React;
@@ -848,22 +877,31 @@
         throw new Error('Root element not found');
       }
       
+      console.log('Rendering app...');
+      
+      // Update debug info before rendering
+      if (typeof updateDebugInfo === 'function') {
+        updateDebugInfo('アプリをレンダリング中...', true, true);
+      }
+      
       // Clear loading indicator
       rootElement.innerHTML = '';
       
       if (ReactDOM.createRoot) {
         // React 18
+        console.log('Using React 18 createRoot');
         const root = ReactDOM.createRoot(rootElement);
         root.render(React.createElement(HanshinFansApp));
       } else {
         // Fallback to React 17 style
+        console.log('Using React 17 render');
         ReactDOM.render(React.createElement(HanshinFansApp), rootElement);
       }
       
       console.log('HanshinFansApp successfully rendered!');
     } catch (error) {
       console.error('Failed to render app:', error);
-      showError('アプリの読み込みに失敗しました。ページを再読み込みしてください。');
+      showError('アプリの読み込みに失敗しました: ' + error.message);
     }
   }
   

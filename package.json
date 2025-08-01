@@ -4,10 +4,11 @@
   "description": "Tokyo Tigers Fan Community - A React app for Hanshin Tigers fans in Tokyo",
   "main": "index.html",
   "scripts": {
-    "dev": "npx serve .",
-    "build": "echo 'Build completed - static files ready'",
-    "start": "npx serve .",
-    "preview": "npx serve ."
+    "dev": "npx serve . --single",
+    "build": "echo 'Static build completed - files ready for deployment'",
+    "start": "npx serve . --single",
+    "preview": "npx serve . --single",
+    "vercel-build": "echo 'Vercel build completed'"
   },
   "keywords": ["hanshin", "tigers", "tokyo", "fan", "community", "react"],
   "author": "hotaka0908",
