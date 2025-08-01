@@ -22,21 +22,8 @@
   ],
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/app.js",
-      "destination": "/app.js"
-    },
-    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "app.js": {
-      "includeFiles": "app.js"
-    }
-  }
+  ]
 }
